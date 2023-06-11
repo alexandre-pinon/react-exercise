@@ -62,13 +62,13 @@ const searchHandler = async (request: Request, h: ResponseToolkit) => {
   )
   const responses = await Promise.allSettled(fetchQueries)
 
-  const allResults = responses.map((r, i) => {
-    if (r.status === 'rejected') {
-      return { endpoint: endpoints[i], results: [] }
-    }
-
-    return { endpoint: endpoints[i], results: r.value }
-  })
+  const allResults = responses
+    .map((r, i) =>
+      r.status === 'fulfilled'
+        ? r.value.map((v) => ({ ...v, category: endpoints[i] }))
+        : []
+    )
+    .flat()
 
   return h.response(allResults)
 }
@@ -79,6 +79,11 @@ const init = async () => {
   const server = Hapi.server({
     port: 8000,
     host: 'localhost',
+    routes: {
+      cors: {
+        origin: [process.env.FRONTEND_URL || ''],
+      },
+    },
   })
 
   await server.register(Basic)
