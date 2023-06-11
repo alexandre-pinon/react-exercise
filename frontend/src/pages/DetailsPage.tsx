@@ -1,18 +1,14 @@
-import { LoaderFunction, useLoaderData, useNavigate } from 'react-router-dom'
-import { getItemDetails } from '../API'
-import { SearchResult } from '../types/results'
-
-export const detailsLoader: LoaderFunction = ({ params }) => {
-  if (!params.category || !params.id) {
-    throw new Error('Missing category or id')
-  }
-
-  return getItemDetails(params.category, +params.id)
-}
+import { useSelector } from 'react-redux'
+import { useNavigate, useParams } from 'react-router-dom'
+import { selectResults } from '../store'
 
 const DetailsPage = () => {
   const navigate = useNavigate()
-  const data = useLoaderData() as SearchResult
+  const { category, id } = useParams()
+
+  const data = useSelector(selectResults).filter((result) =>
+    result.url.includes(`${category}/${id}`)
+  )[0]
 
   return (
     <>

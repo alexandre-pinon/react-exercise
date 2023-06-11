@@ -2,9 +2,11 @@ import './App.css'
 
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import HomePage from './pages/HomePage'
-import DetailsPage, { detailsLoader } from './pages/DetailsPage'
+import DetailsPage from './pages/DetailsPage'
 import RootLayout from './layouts/RootLayout'
 import ErrorPage from './pages/ErrorPage'
+import { Provider } from 'react-redux'
+import store from './store'
 
 const router = createBrowserRouter([
   {
@@ -19,14 +21,17 @@ const router = createBrowserRouter([
       {
         path: '/:category/:id',
         element: <DetailsPage />,
-        loader: detailsLoader,
       },
     ],
   },
 ])
 
 function App() {
-  return <RouterProvider router={router} />
+  return (
+    <Provider store={store}>
+      <RouterProvider router={router} />
+    </Provider>
+  )
 }
 
 export default App

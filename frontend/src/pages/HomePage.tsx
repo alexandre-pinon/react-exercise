@@ -1,25 +1,28 @@
-import SearchBar from '../components/SearchBar'
 import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { searchAPI } from '../API'
-import { SearchResult } from '../types/results'
 import Card from '../components/Card'
+import SearchBar from '../components/SearchBar'
+import { selectResults, setResults } from '../store'
 
 const HomePage = () => {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
-  const [results, setResults] = useState<SearchResult[]>([])
+
+  const results = useSelector(selectResults)
+  const dispatch = useDispatch()
 
   const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
   }
 
   const onSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
     setLoading(true)
+    e.preventDefault()
 
     searchAPI(search).then((data) => {
+      dispatch(setResults(data))
       setLoading(false)
-      setResults(data)
     })
   }
 
