@@ -73,6 +73,23 @@ const searchHandler = async (request: Request, h: ResponseToolkit) => {
   return h.response(allResults)
 }
 
+const itemDetailsHandler = async (request: Request, h: ResponseToolkit) => {
+  const { category, id } = request.params
+
+  try {
+    const response = await fetch(`https://swapi.dev/api/${category}/${id}`)
+
+    if (!response.ok) {
+      throw new Error('Error fetching data')
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
 const init = async () => {
   dotenv.config()
 
@@ -105,6 +122,15 @@ const init = async () => {
       auth: 'simple',
     },
     handler: searchHandler,
+  })
+
+  server.route({
+    method: 'GET',
+    path: '/{category}/{id}',
+    options: {
+      auth: 'simple',
+    },
+    handler: itemDetailsHandler,
   })
 
   await server.start()

@@ -19,6 +19,32 @@ export const searchAPI = async (query: string): Promise<SearchResult[]> => {
     return (await res.json()) as SearchResult[]
   } catch (error) {
     console.error(error)
-    return []
+    throw error
+  }
+}
+
+export const getItemDetails = async (
+  category: string,
+  id: number
+): Promise<SearchResult | null> => {
+  try {
+    const res = await fetch(`http://localhost:8000/${category}/${id}`, {
+      headers: {
+        Authorization: `Basic ${btoa(
+          `${import.meta.env.VITE_API_USERNAME}:${
+            import.meta.env.VITE_API_PASSWORD
+          }`
+        )}`,
+      },
+    })
+
+    if (!res.ok) {
+      throw new Error('Error fetching data')
+    }
+
+    return (await res.json()) as SearchResult
+  } catch (error) {
+    console.error(error)
+    throw error
   }
 }
