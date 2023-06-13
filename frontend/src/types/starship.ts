@@ -1,5 +1,7 @@
+import { Category } from "./category"
+
 export type Starship = {
-  category: 'starships'
+  category: Category.Starships
   name: string
   model: string
   manufacturer: string

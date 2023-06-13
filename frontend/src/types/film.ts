@@ -1,5 +1,7 @@
+import { Category } from "./category"
+
 export type Film = {
-  category: 'films'
+  category: Category.Films
   title: string
   episode_id: number
   opening_crawl: string

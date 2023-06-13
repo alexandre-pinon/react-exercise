@@ -1,5 +1,7 @@
+import { Category } from "./category"
+
 export type Person = {
-  category: 'people'
+  category: Category.People
   name: string
   birth_year: string
   eye_color: string

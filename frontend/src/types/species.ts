@@ -1,5 +1,7 @@
+import { Category } from "./category"
+
 export type Species = {
-  category: 'species'
+  category: Category.Species
   name: string
   classification: string
   designation: string
