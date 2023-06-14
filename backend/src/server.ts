@@ -3,13 +3,6 @@ import Basic from '@hapi/basic'
 import dotenv from 'dotenv'
 import fetch from 'node-fetch'
 
-type SwapiResponse = {
-  count: number
-  next: string | null
-  previous: string | null
-  results: any[]
-}
-
 const validate = async (
   request: Request,
   username: string,
@@ -22,39 +15,12 @@ const validate = async (
   return { isValid, credentials: { username } }
 }
 
-const fetchAllData = async (url: string): Promise<any[]> => {
-  console.log('FETCHING', url)
-  try {
-    const res = await fetch(url)
-
-    if (!res.ok) {
-      throw new Error('Error fetching data')
-    }
-
-    const data = (await res.json()) as SwapiResponse
-
-    if (data.next) {
-      const d = await fetchAllData(data.next)
-      return [...data.results, ...d]
-    }
-
-    return data.results
-  } catch (error) {
-    console.error(error)
-    throw error
-  }
-}
-
-const fetchEndpoint = async (
-  endpoint: string,
-  q = '',
-  page = 1
-): Promise<SwapiResponse> => {
+const fetchCategory = async (category: string, search = '', cursor = 1) => {
   try {
     const res = await fetch(
-      `https://swapi.dev/api/${endpoint}/?${new URLSearchParams({
-        search: q,
-        page: page.toString(),
+      `https://swapi.dev/api/${category}/?${new URLSearchParams({
+        search,
+        page: cursor.toString(),
       })}`
     )
 
@@ -62,48 +28,18 @@ const fetchEndpoint = async (
       throw new Error('Error fetching data')
     }
 
-    return (await res.json()) as SwapiResponse
+    return await res.json()
   } catch (error) {
     console.error(error)
     throw error
   }
 }
 
-const endpoints = [
-  'people',
-  'planets',
-  'films',
-  'species',
-  'vehicles',
-  'starships',
-]
-
 const searchHandler = async (request: Request, h: ResponseToolkit) => {
-  const { q } = request.query
+  const { search, cursor } = request.query
+  const { category } = request.params
 
-  const fetchQueries = endpoints.map((endpoint) =>
-    fetchAllData(`https://swapi.dev/api/${endpoint}/?search=${q}`)
-  )
-  const responses = await Promise.allSettled(fetchQueries)
-
-  const allResults = responses
-    .map((r, i) =>
-      r.status === 'fulfilled'
-        ? r.value.map((v) => ({ ...v, category: endpoints[i] }))
-        : []
-    )
-    .flat()
-
-  return h.response(allResults)
-}
-
-const searchHandlerv2 = async (request: Request, h: ResponseToolkit) => {
-  const { q, page } = request.query
-  const { endpoint } = request.params
-
-  const result = await fetchEndpoint(endpoint, q, page)
-
-  return h.response(result)
+  return await fetchCategory(category, search, cursor)
 }
 
 const init = async () => {
@@ -133,11 +69,11 @@ const init = async () => {
 
   server.route({
     method: 'GET',
-    path: '/search/{endpoint}',
+    path: '/search/{category}',
     options: {
       auth: 'simple',
     },
-    handler: searchHandlerv2,
+    handler: searchHandler,
   })
 
   await server.start()

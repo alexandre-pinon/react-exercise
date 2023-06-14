@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   BiArrowBack,
   BiCar,
@@ -10,18 +11,9 @@ import { FaSpaceShuttle } from 'react-icons/fa'
 import { useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
 import Table from '../components/Table'
-import { Category } from '../types/category'
+import { selectResults } from '../store'
+import { Category } from '../types/enums'
 import { getResultName } from '../utils'
-import ScrollToTop from '../components/ScrollToTop'
-import { useMemo } from 'react'
-import {
-  selectPeople,
-  selectFilms,
-  selectPlanets,
-  selectSpecies,
-  selectVehicles,
-  selectStarships,
-} from '../store'
 
 type Params = {
   category: Category
@@ -32,36 +24,11 @@ const DetailsPage = () => {
   const navigate = useNavigate()
   const { category, id } = useParams<Params>()
 
+  const results = useSelector(selectResults)
+
   const result = useMemo(() => {
-    switch (category) {
-      case Category.Films:
-        return useSelector(selectFilms).find((film) =>
-          film.url.includes(`/${id}/`)
-        )
-      case Category.People:
-        return useSelector(selectPeople).find((person) =>
-          person.url.includes(`/${id}/`)
-        )
-      case Category.Planets:
-        return useSelector(selectPlanets).find((planet) =>
-          planet.url.includes(`/${id}/`)
-        )
-      case Category.Species:
-        return useSelector(selectSpecies).find((species) =>
-          species.url.includes(`/${id}/`)
-        )
-      case Category.Starships:
-        return useSelector(selectStarships).find((starship) =>
-          starship.url.includes(`/${id}/`)
-        )
-      case Category.Vehicles:
-        return useSelector(selectVehicles).find((vehicle) =>
-          vehicle.url.includes(`/${id}/`)
-        )
-      default:
-        throw new Error('Invalid category')
-    }
-  }, [category, id])
+    return results.find((result) => result.url.includes(`/${category}/${id}`))
+  }, [results, category, id])
 
   const getCategoryIcon = (category: Category) => {
     switch (category) {
@@ -81,7 +48,7 @@ const DetailsPage = () => {
   }
 
   return (
-    <ScrollToTop>
+    <>
       <div className="flex flex-col items-center gap-2">
         <span className="text-4xl">{getCategoryIcon(category!)}</span>
         <h2 className="text-3xl">{getResultName(result!)}</h2>
@@ -96,7 +63,7 @@ const DetailsPage = () => {
       <div className="overflow-x-auto">
         <Table data={result!} />
       </div>
-    </ScrollToTop>
+    </>
   )
 }
 
