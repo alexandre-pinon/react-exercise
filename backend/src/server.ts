@@ -45,6 +45,30 @@ const fetchAllData = async (url: string): Promise<any[]> => {
   }
 }
 
+const fetchEndpoint = async (
+  endpoint: string,
+  q = '',
+  page = 1
+): Promise<SwapiResponse> => {
+  try {
+    const res = await fetch(
+      `https://swapi.dev/api/${endpoint}/?${new URLSearchParams({
+        search: q,
+        page: page.toString(),
+      })}`
+    )
+
+    if (!res.ok) {
+      throw new Error('Error fetching data')
+    }
+
+    return (await res.json()) as SwapiResponse
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
 const endpoints = [
   'people',
   'planets',
@@ -71,6 +95,15 @@ const searchHandler = async (request: Request, h: ResponseToolkit) => {
     .flat()
 
   return h.response(allResults)
+}
+
+const searchHandlerv2 = async (request: Request, h: ResponseToolkit) => {
+  const { q, page } = request.query
+  const { endpoint } = request.params
+
+  const result = await fetchEndpoint(endpoint, q, page)
+
+  return h.response(result)
 }
 
 const init = async () => {
@@ -100,11 +133,11 @@ const init = async () => {
 
   server.route({
     method: 'GET',
-    path: '/search',
+    path: '/search/{endpoint}',
     options: {
       auth: 'simple',
     },
-    handler: searchHandler,
+    handler: searchHandlerv2,
   })
 
   await server.start()

@@ -1,7 +1,4 @@
-import { Category } from "./category"
-
 export type Planet = {
-  category: Category.Planets
   name: string
   rotation_period: string
   orbital_period: string
