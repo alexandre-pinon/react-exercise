@@ -7,7 +7,6 @@ import FilterBar from '../components/FilterBar'
 import SearchBar from '../components/SearchBar'
 import * as Store from '../store'
 import { Category, Filter } from '../types/enums'
-import { SwapiResponse } from '../types/results'
 
 const HomePage = () => {
   const [loading, setLoading] = useState(false)

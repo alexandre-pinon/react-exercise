@@ -3,7 +3,7 @@ import Basic from '@hapi/basic'
 import dotenv from 'dotenv'
 import fetch from 'node-fetch'
 
-const validate = async (
+const validateAuth = async (
   request: Request,
   username: string,
   password: string
@@ -46,18 +46,17 @@ const init = async () => {
   dotenv.config()
 
   const server = Hapi.server({
-    port: 8000,
-    host: 'localhost',
+    port: process.env.API_PORT,
+    host: process.env.API_HOST,
     routes: {
       cors: {
         origin: [process.env.FRONTEND_URL || ''],
       },
     },
   })
-
   await server.register(Basic)
 
-  server.auth.strategy('simple', 'basic', { validate })
+  server.auth.strategy('simple', 'basic', { validate: validateAuth })
 
   server.route({
     method: 'GET',
@@ -77,7 +76,7 @@ const init = async () => {
   })
 
   await server.start()
-  console.log('Server running on %s', server.info.uri)
+  console.log(`Server running on ${server.info.uri}`)
 }
 
 process.on('unhandledRejection', (err) => {
