@@ -1,4 +1,26 @@
-# Star Wars Rebels Alliance Search System
+# Lancer les serveurs
+
+Assurez vous d'avoir node d'installé
+
+## Lancer le backend
+
+```sh
+cd backend/
+npm i
+npm run dev
+```
+
+## Lancer le frontend
+
+```sh
+cd frontend/
+npm i
+npm run dev
+```
+
+
+# Sujet
+## Star Wars Rebels Alliance Search System
 Bienvenue dans l'Alliance Rebelle jeune Padawan!<br/>
 Nous avons besoin de personnes motivées pour défaire l'Empire.
 
