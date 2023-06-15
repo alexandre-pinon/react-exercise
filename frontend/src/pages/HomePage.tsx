@@ -36,51 +36,47 @@ const HomePage = () => {
     category: Category,
     cursor: number
   ) => {
-    try {
-      setLoading(true)
-      const response = await searchAPI(category, search, cursor)
-
-      if (!response.ok) {
-        throw new Error(response.statusText)
-      }
-
-      const data = (await response.json()) as SwapiResponse
-
-      dispatch(Store.addResults(data.results))
-      if (data.next) {
-        dispatch(Store.incrementCursor(category))
-      } else {
-        dispatch(Store.resetCursor(category))
-      }
-    } catch (error) {
-      console.error(error)
-      throw new Error('Error fetching data')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const searchNewData = async (search: string, dispatch: Dispatch) => {
-    dispatch(Store.clearResults())
-
-    await Promise.allSettled([
-      Object.values(Category).map((category) => {
-        searchAndAddResults(search, category, 1)
-      }),
-    ])
+    const response = await searchAPI(category, search, cursor)
 
     if (!fetchedOnce) {
       dispatch(Store.setFetchedOnce(true))
     }
-    dispatch(Store.setLastSearch(search))
+
+    dispatch(Store.addResults(response.results))
+
+    if (response.next) {
+      dispatch(Store.incrementCursor(category))
+    } else {
+      dispatch(Store.resetCursor(category))
+    }
   }
 
-  const loadMoreData = () => {
-    Object.values(Category).map((category) => {
+  const searchNewData = async (search: string, dispatch: Dispatch) => {
+    if (loading) return
+
+    setLoading(true)
+    dispatch(Store.clearResults())
+
+    const fetchRequests = Object.values(Category).map(async (category) => {
+      await searchAndAddResults(search, category, 1)
+    })
+    await Promise.allSettled(fetchRequests)
+
+    dispatch(Store.setLastSearch(search))
+    setLoading(false)
+  }
+
+  const loadMoreData = async () => {
+    setLoading(true)
+
+    const fetchRequests = Object.values(Category).map(async (category) => {
       if (cursors[category] > 1) {
-        searchAndAddResults(search, category, cursors[category])
+        await searchAndAddResults(search, category, cursors[category])
       }
     })
+    await Promise.allSettled(fetchRequests)
+
+    setLoading(false)
   }
 
   const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +99,7 @@ const HomePage = () => {
 
     const timeout = setTimeout(() => {
       searchNewData(search, dispatch)
-    }, 500)
+    }, 1000)
 
     return () => clearTimeout(timeout)
   }, [search, lastSearch, dispatch])
@@ -135,15 +131,17 @@ const HomePage = () => {
             <span className="loading loading-dots loading-lg text-primary "></span>
           </div>
         ) : (
-          <div className="col-span-12 place-self-center">
-            <button
-              className="btn"
-              onClick={loadMoreData}
-              disabled={!moreDataAvailable}
-            >
-              {moreDataAvailable ? 'Load more' : 'Nothing more to load'}
-            </button>
-          </div>
+          filteredResults.length > 0 && (
+            <div className="col-span-12 place-self-center">
+              <button
+                className="btn"
+                onClick={loadMoreData}
+                disabled={!moreDataAvailable}
+              >
+                {moreDataAvailable ? 'Load more' : 'Nothing more to load'}
+              </button>
+            </div>
+          )
         )}
       </div>
     </>

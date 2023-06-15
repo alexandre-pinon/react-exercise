@@ -17,15 +17,15 @@ const validate = async (
 
 const fetchCategory = async (category: string, search = '', cursor = 1) => {
   try {
-    const res = await fetch(
-      `https://swapi.dev/api/${category}/?${new URLSearchParams({
-        search,
-        page: cursor.toString(),
-      })}`
-    )
+    const url = `https://swapi.dev/api/${category}/?${new URLSearchParams({
+      search,
+      page: cursor.toString(),
+    })}`
+    const res = await fetch(url)
 
     if (!res.ok) {
-      throw new Error('Error fetching data')
+      console.error(`Error fetching ${url}`)
+      throw new Error(res.statusText)
     }
 
     return await res.json()
